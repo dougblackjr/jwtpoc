@@ -1,23 +1,22 @@
 <template>
-	<section>
-		<div class="container">
-			<div class="row">
-				<login />
-				<state-container />
-			</div>
-		</div>
-	</section>
+	<div class="col-md-6">
+		<login-state />
+		<new-item />
+		<item-manager />
+	</div>
 </template>
 
 <script>
 
-	import Login from './Login'
-	import StateContainer from './StateContainer'
+	import LoginState from './LoginState'
+	import ItemManager from './ItemManager'
+	import NewItem from './NewItem'
 
 	export default {
 		components: {
-			Login,
-			StateContainer
+			LoginState,
+			ItemManager,
+			NewItem
 		},
 		props: {},
 		data() {

@@ -14,6 +14,7 @@ import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import store from './store'
 import router from './router'
+import helpers from './helpers'
 
 // Components
 Vue.use(VueRouter)
