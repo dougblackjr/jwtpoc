@@ -23,9 +23,26 @@ const store = new Vuex.Store({
 			state.items = items
 		},
 		setUser(state, user) {
-			state.user = user
-			if(user.permissions) {
-				state.commit('setPermissions', user.permissions)
+
+			if(!user.access_token) return {}
+
+			window.axios.defaults.headers.common = {'Authorization': `Bearer ${user.access_token}`}
+
+			let expire = new Date
+
+			let data = {
+				token: user.access_token,
+				expire: expire.setHours( expire.getHours() + 2 )
+			}
+
+			localStorage.setItem('token', JSON.stringify(data))
+
+			state.user = user.custom
+
+			if(user.custom && user.custom.permissions) {
+
+				state.permissions = user.custom.permissions
+
 			}
 		},
 		setPermissions(state, permissions) {
@@ -34,13 +51,50 @@ const store = new Vuex.Store({
 	},
 	actions: {
 		checkAuth(context) {
-			return true
+			// Check if localStorage
+			let token = localStorage.getItem('token')
+
+			if(!token) {
+				context.commit('setUser', {})
+				context.commit('setPermissions', [])
+				return false
+			}
+			token = JSON.parse(token)
+
+			// Check timing
+			if(token.expire) {
+				let expire = new Date
+
+				if(token.expire < expire.getTime()) {
+					context.commit('setUser', {})
+					context.commit('setPermissions', [])
+					return false
+				}
+			}
+			context.dispatch('me', token)
 		},
 		login(context, data) {
 			window.axios.post(`${BASE_URL}/login`, data)
 			.then(res => {
-				console.log('gotLogin', res.data)
-				console.log('parsed', helpers.parseJwt(res.data.accessToken))
+				context.commit('setUser', res.data)
+			})
+		},
+		me(context, token) {
+			console.log('token.access_token', token.access_token)
+			window.axios.defaults.headers.common = {'Authorization': `Bearer ${token.token}`}
+			window.axios.post(`${BASE_URL}/me`)
+			.then(res => {
+				let data = {
+					access_token: token.token,
+					custom: res.data
+				}
+
+				context.commit('setUser', data)
+			})
+		},
+		refresh(context) {
+			window.axios.post(`${BASE_URL}/refresh`)
+			.then(res => {
 				context.commit('setUser', res.data)
 			})
 		},

@@ -40,7 +40,7 @@ class AuthController extends Controller
 	 */
 	public function me()
 	{
-		return response()->json(Auth::user());
+		return response()->json(Auth::user()->getJWTCustomClaims());
 	}
 
 	/**
@@ -77,7 +77,8 @@ class AuthController extends Controller
 		return response()->json([
 			'access_token' => $token,
 			'token_type' => 'bearer',
-			'expires_in' => $this->guard()->factory()->getTTL() * 60
+			'expires_in' => $this->guard()->factory()->getTTL() * 60,
+			'custom'	=> Auth::user()->getJWTCustomClaims(),
 		]);
 	}
 

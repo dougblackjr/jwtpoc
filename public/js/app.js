@@ -1866,7 +1866,9 @@ __webpack_require__.r(__webpack_exports__);
   computed: {},
   created: function created() {},
   beforeDestroy: function beforeDestroy() {},
-  mounted: function mounted() {}
+  mounted: function mounted() {
+    this.$store.dispatch('checkAuth');
+  }
 });
 
 /***/ }),
@@ -1940,6 +1942,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {},
   props: {},
@@ -1955,6 +1958,9 @@ __webpack_require__.r(__webpack_exports__);
         email: this.email,
         password: this.password
       });
+    },
+    logout: function logout() {
+      this.$store.dispatch('logout');
     }
   }
 });
@@ -1981,6 +1987,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {},
   props: {},
@@ -1990,10 +1997,16 @@ __webpack_require__.r(__webpack_exports__);
   methods: {},
   computed: {
     loginClass: function loginClass() {
-      return this.$store.state.user == {} ? 'alert-warning' : 'alert-primary';
+      return this.$store.state.user.name ? 'alert-primary' : 'alert-danger';
+    },
+    hasUser: function hasUser() {
+      return this.$store.state.user.name ? true : false;
     },
     user: function user() {
-      return this.$store.state.user;
+      return this.$store.state.user.name;
+    },
+    permissions: function permissions() {
+      return this.$store.state.permissions;
     }
   },
   created: function created() {},
@@ -19842,6 +19855,17 @@ var render = function() {
             return _vm.login($event)
           }
         }
+      }),
+      _vm._v(" "),
+      _c("input", {
+        staticClass: "btn btn-warning",
+        attrs: { type: "submit", value: "Logout" },
+        on: {
+          click: function($event) {
+            $event.preventDefault()
+            return _vm.logout($event)
+          }
+        }
       })
     ])
   ])
@@ -19872,13 +19896,22 @@ var render = function() {
     "div",
     { staticClass: "alert", class: _vm.loginClass, attrs: { role: "alert" } },
     [
-      _vm.user !== {}
-        ? _c("p", [_vm._v("\n\t\tYou are not logged in\n\t")])
-        : _c("p", [
-            _vm._v(
-              "\n\t\tYou are logged in as " + _vm._s(_vm.user.name) + "\n\t"
-            )
-          ])
+      _vm.hasUser
+        ? _c(
+            "p",
+            [
+              _vm._v(
+                "\n\t\tYou are logged in as " +
+                  _vm._s(_vm.user) +
+                  ", and can \n\t\t"
+              ),
+              _vm._l(_vm.permissions, function(p) {
+                return _c("span", { key: p }, [_vm._v(_vm._s(p))])
+              })
+            ],
+            2
+          )
+        : _c("p", [_vm._v("\n\t\tYou are not logged in\n\t")])
     ]
   )
 }
@@ -36686,10 +36719,20 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       state.items = items;
     },
     setUser: function setUser(state, user) {
-      state.user = user;
+      if (!user.access_token) return {};
+      window.axios.defaults.headers.common = {
+        'Authorization': "Bearer ".concat(user.access_token)
+      };
+      var expire = new Date();
+      var data = {
+        token: user.access_token,
+        expire: expire.setHours(expire.getHours() + 2)
+      };
+      localStorage.setItem('token', JSON.stringify(data));
+      state.user = user.custom;
 
-      if (user.permissions) {
-        state.commit('setPermissions', user.permissions);
+      if (user.custom && user.custom.permissions) {
+        state.permissions = user.custom.permissions;
       }
     },
     setPermissions: function setPermissions(state, permissions) {
@@ -36698,12 +36741,49 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
   },
   actions: {
     checkAuth: function checkAuth(context) {
-      return true;
+      // Check if localStorage
+      var token = localStorage.getItem('token');
+
+      if (!token) {
+        context.commit('setUser', {});
+        context.commit('setPermissions', []);
+        return false;
+      }
+
+      token = JSON.parse(token); // Check timing
+
+      if (token.expire) {
+        var expire = new Date();
+
+        if (token.expire < expire.getTime()) {
+          context.commit('setUser', {});
+          context.commit('setPermissions', []);
+          return false;
+        }
+      }
+
+      context.dispatch('me', token);
     },
     login: function login(context, data) {
       window.axios.post("".concat(BASE_URL, "/login"), data).then(function (res) {
-        console.log('gotLogin', res.data);
-        console.log('parsed', _helpers__WEBPACK_IMPORTED_MODULE_3__["default"].parseJwt(res.data.accessToken));
+        context.commit('setUser', res.data);
+      });
+    },
+    me: function me(context, token) {
+      console.log('token.access_token', token.access_token);
+      window.axios.defaults.headers.common = {
+        'Authorization': "Bearer ".concat(token.token)
+      };
+      window.axios.post("".concat(BASE_URL, "/me")).then(function (res) {
+        var data = {
+          access_token: token.token,
+          custom: res.data
+        };
+        context.commit('setUser', data);
+      });
+    },
+    refresh: function refresh(context) {
+      window.axios.post("".concat(BASE_URL, "/refresh")).then(function (res) {
         context.commit('setUser', res.data);
       });
     },

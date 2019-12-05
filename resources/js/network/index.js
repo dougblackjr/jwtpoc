@@ -36,4 +36,4 @@ const requestRefresh = async (refreshToken): Promise => {
 };
 
 // add interceptor to your axios instance
-useAuthTokenInterceptor(apiClient, { requestRefresh });
+useAuthTokenInterceptor(api, { requestRefresh });

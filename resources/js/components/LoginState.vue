@@ -1,10 +1,11 @@
 <template>
 	<div class="alert" role="alert" :class="loginClass">
-		<p v-if="user !== {}">
-			You are not logged in
+		<p v-if="hasUser">
+			You are logged in as {{ user }}, and can 
+			<span v-for="p in permissions" :key="p">{{ p }}</span>
 		</p>
 		<p v-else>
-			You are logged in as {{ user.name }}
+			You are not logged in
 		</p>
 	</div>
 </template>
@@ -23,10 +24,16 @@
 		},
 		computed: {
 			loginClass() {
-				return this.$store.state.user == {} ? 'alert-warning' : 'alert-primary'
+				return this.$store.state.user.name ? 'alert-primary' : 'alert-danger'
+			},
+			hasUser() {
+				return this.$store.state.user.name ? true : false
 			},
 			user() {
-				return this.$store.state.user
+				return this.$store.state.user.name
+			},
+			permissions() {
+				return this.$store.state.permissions
 			}
 		},
 		created() {

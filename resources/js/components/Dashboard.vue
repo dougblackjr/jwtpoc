@@ -38,7 +38,7 @@
 
 		},
 		mounted() {
-
+			this.$store.dispatch('checkAuth')
 		}
 	};
 </script>

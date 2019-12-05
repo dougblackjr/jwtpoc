@@ -7,6 +7,7 @@
 			<p>Password (the password is password)</p>
 			<input type="password" class="form-control" v-model="password" />
 			<input type="submit" class="btn btn-primary" v-on:click.prevent="login" value="Login" />
+			<input type="submit" class="btn btn-warning" v-on:click.prevent="logout" value="Logout" />
 		</form>
 	</div>
 </template>
@@ -24,6 +25,9 @@
 		methods: {
 			login() {
 				this.$store.dispatch('login', {email: this.email, password: this.password})
+			},
+			logout() {
+				this.$store.dispatch('logout')
 			}
 		}
 	};
