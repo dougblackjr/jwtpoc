@@ -36761,6 +36761,7 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
         var expire = new Date();
 
         if (token.expire < expire.getTime()) {
+          localStorage.removeItem('token');
           context.commit('setUser', {});
           context.commit('setPermissions', []);
           return false;

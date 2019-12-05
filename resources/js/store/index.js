@@ -70,6 +70,7 @@ const store = new Vuex.Store({
 				let expire = new Date
 
 				if(token.expire < expire.getTime()) {
+					localStorage.removeItem('token')
 					context.commit('setUser', {})
 					context.commit('setPermissions', [])
 					return false
