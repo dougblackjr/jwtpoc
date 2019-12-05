@@ -104,14 +104,26 @@ const store = new Vuex.Store({
 			})
 		},
 		logout(context) {
-			window.axios.post('/api/auth/logout')
+			window.axios.post(`${BASE_URL}/logout`)
 			.then(res => {
 				context.commit('setUser', {})
 				context.commit('setPermissions', null)
 				localStorage.removeItem('token')
 			})
 		},
+		getItems(context) {
+			window.axios.get('/api/items')
+			.then(res => context.commit('setItems', res.data))
+		},
+		createItem(context, data) {
+			window.axios.post('/api/items', {name: data})
+			.then((res) => context.dispatch('getItems'))
+		},
 		can(context, data) {
+			console.log('data', data)
+
+			if(!context.permissions) return false
+
 			if(Array.isArray(data)) {
 
 				let response = false

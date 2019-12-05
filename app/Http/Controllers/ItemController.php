@@ -15,6 +15,8 @@ class ItemController extends Controller
     public function index()
     {
 
+        $this->authorize('read', Item::class);
+
         return response()->json(Item::all());
 
     }
@@ -28,7 +30,9 @@ class ItemController extends Controller
     public function store(Request $request)
     {
 
-        Item::create($request->all());
+        $this->authorize('create', Item::class);
+
+        $item = Item::create($request->all());
 
         return response()->json($item);
 
@@ -44,6 +48,8 @@ class ItemController extends Controller
     public function update(Request $request, Item $item)
     {
 
+        $this->authorize('update', Item::class);
+
         $item->update($request->all());
 
         return response()->json($item);
@@ -58,6 +64,9 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
+
+        $this->authorize('delete', Item::class);
+
         $item->delete();
 
         return response()->json($item);

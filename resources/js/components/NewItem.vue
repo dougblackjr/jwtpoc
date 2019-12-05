@@ -2,8 +2,8 @@
 	<div class="row">
 		<div class="col-md-12">
 			<form class="form-inline form-group">
-				<input type="text" class="form-control" v-model="name" :disabled="canCreateItem" placeholder="Item Name" />
-				<input type="submit" class="btn btn-primary" v-on:click.prevent="login" :disabled="canCreateItem" :value="canCreateItemText" />
+				<input type="text" class="form-control" v-model="name" :disabled="!canCreateItem" placeholder="Item Name" />
+				<input type="submit" class="btn btn-primary" v-on:click.prevent="create" :disabled="!canCreateItem" :value="canCreateItemText" />
 			</form>
 		</div>
 	</div>
@@ -19,14 +19,16 @@
 			}
 		},
 		methods: {
-			
+			create() {
+				this.$store.dispatch('createItem', this.name)
+			}
 		},
 		computed: {
 			canCreateItem() {
-				return this.$store.state.canCreate
+				return this.$store.dispatch('can', 'create')
 			},
 			canCreateItemText() {
-				return this.$store.state.canCreate ? 'Go ahead' : 'You don\'t have permission'
+				return this.$store.dispatch('can', 'create') ? 'Go ahead' : 'You don\'t have permission'
 			}
 		},
 		created() {

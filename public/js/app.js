@@ -1898,6 +1898,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {},
   props: {},
@@ -1911,6 +1916,15 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     items: function items() {
       return this.$store.state.items;
+    },
+    canRead: function canRead() {
+      return this.$store.dispatch('can', 'read');
+    },
+    canUpdate: function canUpdate() {
+      return this.$store.dispatch('can', 'update');
+    },
+    canDelete: function canDelete() {
+      return this.$store.dispatch('can', 'create');
     }
   },
   created: function created() {},
@@ -1951,6 +1965,11 @@ __webpack_require__.r(__webpack_exports__);
       email: '',
       password: ''
     };
+  },
+  computed: {
+    loggedIn: function loggedIn() {
+      return this.$store.state.user.name ? true : false;
+    }
   },
   methods: {
     login: function login() {
@@ -2044,13 +2063,17 @@ __webpack_require__.r(__webpack_exports__);
       name: ''
     };
   },
-  methods: {},
+  methods: {
+    create: function create() {
+      this.$store.dispatch('createItem', this.name);
+    }
+  },
   computed: {
     canCreateItem: function canCreateItem() {
-      return this.$store.state.canCreate;
+      return this.$store.dispatch('can', 'create');
     },
     canCreateItemText: function canCreateItemText() {
-      return this.$store.state.canCreate ? 'Go ahead' : 'You don\'t have permission';
+      return this.$store.dispatch('can', 'create') ? 'Go ahead' : 'You don\'t have permission';
     }
   },
   created: function created() {},
@@ -19759,20 +19782,35 @@ var render = function() {
   return _c(
     "div",
     _vm._l(_vm.items, function(i) {
-      return _c("div", { key: i.id, staticClass: "row" }, [
-        _c("div", { staticClass: "col-md-6" }, [
-          _vm._v("\n\t\t\t" + _vm._s(i.name) + "\n\t\t")
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "col-md-3" }),
-        _vm._v(" "),
-        _c("div", {})
-      ])
+      return _vm.canRead
+        ? _c("div", { key: i.id, staticClass: "row" }, [
+            _c("div", { staticClass: "col-md-6" }, [
+              _vm._v("\n\t\t\t" + _vm._s(i.name) + "\n\t\t")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-md-3" }),
+            _vm._v(" "),
+            _c("div", {})
+          ])
+        : _c("div", [_vm._m(0)])
     }),
     0
   )
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _c("img", {
+        attrs: {
+          src: "https://media.giphy.com/media/l2JejnZKsFIoWeReo/giphy.gif"
+        }
+      })
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -19797,77 +19835,77 @@ var render = function() {
   return _c("div", { staticClass: "col-md-6" }, [
     _c("h2", [_vm._v("Login")]),
     _vm._v(" "),
-    _c("form", { staticClass: "form-group" }, [
-      _c("p", [_vm._v("Email")]),
-      _vm._v(" "),
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.email,
-            expression: "email"
-          }
-        ],
-        staticClass: "form-control",
-        attrs: { type: "email" },
-        domProps: { value: _vm.email },
-        on: {
-          input: function($event) {
-            if ($event.target.composing) {
-              return
+    !_vm.loggedIn
+      ? _c("form", { staticClass: "form-group" }, [
+          _c("p", [_vm._v("Email")]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.email,
+                expression: "email"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { type: "email" },
+            domProps: { value: _vm.email },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.email = $event.target.value
+              }
             }
-            _vm.email = $event.target.value
-          }
-        }
-      }),
-      _vm._v(" "),
-      _c("p", [_vm._v("Password (the password is password)")]),
-      _vm._v(" "),
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.password,
-            expression: "password"
-          }
-        ],
-        staticClass: "form-control",
-        attrs: { type: "password" },
-        domProps: { value: _vm.password },
-        on: {
-          input: function($event) {
-            if ($event.target.composing) {
-              return
+          }),
+          _vm._v(" "),
+          _c("p", [_vm._v("Password (the password is password)")]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.password,
+                expression: "password"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { type: "password" },
+            domProps: { value: _vm.password },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.password = $event.target.value
+              }
             }
-            _vm.password = $event.target.value
+          }),
+          _vm._v(" "),
+          _c("input", {
+            staticClass: "btn btn-primary",
+            attrs: { type: "submit", value: "Login" },
+            on: {
+              click: function($event) {
+                $event.preventDefault()
+                return _vm.login($event)
+              }
+            }
+          })
+        ])
+      : _c("input", {
+          staticClass: "btn btn-warning",
+          attrs: { type: "submit", value: "Logout" },
+          on: {
+            click: function($event) {
+              $event.preventDefault()
+              return _vm.logout($event)
+            }
           }
-        }
-      }),
-      _vm._v(" "),
-      _c("input", {
-        staticClass: "btn btn-primary",
-        attrs: { type: "submit", value: "Login" },
-        on: {
-          click: function($event) {
-            $event.preventDefault()
-            return _vm.login($event)
-          }
-        }
-      }),
-      _vm._v(" "),
-      _c("input", {
-        staticClass: "btn btn-warning",
-        attrs: { type: "submit", value: "Logout" },
-        on: {
-          click: function($event) {
-            $event.preventDefault()
-            return _vm.logout($event)
-          }
-        }
-      })
-    ])
+        })
   ])
 }
 var staticRenderFns = []
@@ -19952,7 +19990,7 @@ var render = function() {
           staticClass: "form-control",
           attrs: {
             type: "text",
-            disabled: _vm.canCreateItem,
+            disabled: !_vm.canCreateItem,
             placeholder: "Item Name"
           },
           domProps: { value: _vm.name },
@@ -19968,12 +20006,12 @@ var render = function() {
         _vm._v(" "),
         _c("input", {
           staticClass: "btn btn-primary",
-          attrs: { type: "submit", disabled: _vm.canCreateItem },
+          attrs: { type: "submit", disabled: !_vm.canCreateItem },
           domProps: { value: _vm.canCreateItemText },
           on: {
             click: function($event) {
               $event.preventDefault()
-              return _vm.login($event)
+              return _vm.create($event)
             }
           }
         })
@@ -36793,13 +36831,28 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       });
     },
     logout: function logout(context) {
-      window.axios.post('/api/auth/logout').then(function (res) {
+      window.axios.post("".concat(BASE_URL, "/logout")).then(function (res) {
         context.commit('setUser', {});
         context.commit('setPermissions', null);
         localStorage.removeItem('token');
       });
     },
+    getItems: function getItems(context) {
+      window.axios.get('/api/items').then(function (res) {
+        return context.commit('setItems', res.data);
+      });
+    },
+    createItem: function createItem(context, data) {
+      window.axios.post('/api/items', {
+        name: data
+      }).then(function (res) {
+        return context.dispatch('getItems');
+      });
+    },
     can: function can(context, data) {
+      console.log('data', data);
+      if (!context.permissions) return false;
+
       if (Array.isArray(data)) {
         var response = false;
         var confirmed = data.filter(function (d) {
