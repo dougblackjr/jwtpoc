@@ -2,7 +2,7 @@
 	<div class="alert" role="alert" :class="loginClass">
 		<p v-if="hasUser">
 			You are logged in as {{ user }}, and can 
-			<span v-for="p in permissions" :key="p">{{ p }}</span>
+			<span v-for="p in permissions" :key="p">{{ p }}, </span>
 		</p>
 		<p v-else>
 			You are not logged in

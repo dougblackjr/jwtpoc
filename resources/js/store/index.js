@@ -24,7 +24,11 @@ const store = new Vuex.Store({
 		},
 		setUser(state, user) {
 
-			if(!user.access_token) return {}
+			if(user == {} || !user.access_token) {
+				state.user = {}
+				state.permissions = []
+				return false
+			}
 
 			window.axios.defaults.headers.common = {'Authorization': `Bearer ${user.access_token}`}
 
@@ -80,7 +84,7 @@ const store = new Vuex.Store({
 			})
 		},
 		me(context, token) {
-			console.log('token.access_token', token.access_token)
+
 			window.axios.defaults.headers.common = {'Authorization': `Bearer ${token.token}`}
 			window.axios.post(`${BASE_URL}/me`)
 			.then(res => {
@@ -101,8 +105,9 @@ const store = new Vuex.Store({
 		logout(context) {
 			window.axios.post('/api/auth/logout')
 			.then(res => {
-				context.commit('setUser', res.data)
-				context.commit('setPermissions', [])
+				context.commit('setUser', {})
+				context.commit('setPermissions', null)
+				localStorage.removeItem('token')
 			})
 		},
 		can(context, data) {

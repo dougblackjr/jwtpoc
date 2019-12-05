@@ -19906,7 +19906,7 @@ var render = function() {
                   ", and can \n\t\t"
               ),
               _vm._l(_vm.permissions, function(p) {
-                return _c("span", { key: p }, [_vm._v(_vm._s(p))])
+                return _c("span", { key: p }, [_vm._v(_vm._s(p) + ", ")])
               })
             ],
             2
@@ -36719,7 +36719,12 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       state.items = items;
     },
     setUser: function setUser(state, user) {
-      if (!user.access_token) return {};
+      if (user == {} || !user.access_token) {
+        state.user = {};
+        state.permissions = [];
+        return false;
+      }
+
       window.axios.defaults.headers.common = {
         'Authorization': "Bearer ".concat(user.access_token)
       };
@@ -36770,7 +36775,6 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       });
     },
     me: function me(context, token) {
-      console.log('token.access_token', token.access_token);
       window.axios.defaults.headers.common = {
         'Authorization': "Bearer ".concat(token.token)
       };
@@ -36789,8 +36793,9 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
     },
     logout: function logout(context) {
       window.axios.post('/api/auth/logout').then(function (res) {
-        context.commit('setUser', res.data);
-        context.commit('setPermissions', []);
+        context.commit('setUser', {});
+        context.commit('setPermissions', null);
+        localStorage.removeItem('token');
       });
     },
     can: function can(context, data) {
