@@ -1,25 +1,22 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import router from '../router'
+import helpers from '../helpers'
 
 Vue.use(Vuex)
+
+const BASE_URL = process.env.MIX_JWT_BASE_AUTH_URL;
 
 const store = new Vuex.Store({
 	state: {
 		items: [],
 		user: {},
-		canCreate: false,
-		canUpdate: false,
-		canRead: false,
-		canDelete: false,
+		can: []
 	},
 	getters: {
 		items: state => state.items,
 		user: state => state.user,
-		canCreate: state => state.canCreate,
-		canUpdate: state => state.canUpdate,
-		canRead: state => state.canRead,
-		canDelete: state => state.canDelete,
+		permissions: state => state.permissions
 	},
 	mutations: {
 		setItems(state, items) {
@@ -28,23 +25,11 @@ const store = new Vuex.Store({
 		setUser(state, user) {
 			state.user = user
 			if(user.permissions) {
-				state.commit('setCanCreate', user.permissions.includes('create'))
-				state.commit('setCanUpdate', user.permissions.includes('update'))
-				state.commit('setCanRead', user.permissions.includes('read'))
-				state.commit('setCanDelete', user.permissions.includes('delete'))
+				state.commit('setPermissions', user.permissions)
 			}
 		},
-		setCanCreate(state, canCreate) {
-			state.canCreate = canCreate
-		},
-		setCanUpdate(state, canUpdate) {
-			state.canUpdate = canUpdate
-		},
-		setCanRead(state, canRead) {
-			state.canRead = canRead
-		},
-		setCanDelete(state, canDelete) {
-			state.canDelete = canDelete
+		setPermissions(state, permissions) {
+			state.permissions = permissions
 		}
 	},
 	actions: {
@@ -52,21 +37,34 @@ const store = new Vuex.Store({
 			return true
 		},
 		login(context, data) {
-			window.axios.post('/api/auth/login', data)
+			window.axios.post(`${BASE_URL}/login`, data)
 			.then(res => {
 				console.log('gotLogin', res.data)
-				context.commit(setUser, res.data)
+				console.log('parsed', helpers.parseJwt(res.data.accessToken))
+				context.commit('setUser', res.data)
 			})
 		},
 		logout(context) {
 			window.axios.post('/api/auth/logout')
 			.then(res => {
-				context.commit(setUser, res.data)
-				context.commit('setCanCreate', false)
-				context.commit('setCanUpdate', false)
-				context.commit('setCanRead', false)
-				context.commit('setCanDelete', false)
+				context.commit('setUser', res.data)
+				context.commit('setPermissions', [])
 			})
+		},
+		can(context, data) {
+			if(Array.isArray(data)) {
+
+				let response = false
+
+				let confirmed = data.filter(d => context.permissions.includes(d))
+
+				return confirmed.length > 0
+
+			} else {
+
+				return context.permissions.includes(data)
+
+			}
 		}
 	}
 })

@@ -36587,6 +36587,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../store */ "./resources/js/store/index.js");
+
 var helpers = {
   parseJwt: function parseJwt(token) {
     var base64Url = token.split('.')[1];
@@ -36595,6 +36597,9 @@ var helpers = {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);
+  },
+  can: function can(request) {
+    return _store__WEBPACK_IMPORTED_MODULE_0__["default"].can(request);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = (helpers);
@@ -36652,18 +36657,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
 /* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../router */ "./resources/js/router/index.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../helpers */ "./resources/js/helpers/index.js");
+
 
 
 
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__["default"]);
+var BASE_URL = "http://jwtpoc.test/api/auth";
 var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
   state: {
     items: [],
     user: {},
-    canCreate: false,
-    canUpdate: false,
-    canRead: false,
-    canDelete: false
+    can: []
   },
   getters: {
     items: function items(state) {
@@ -36672,17 +36677,8 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
     user: function user(state) {
       return state.user;
     },
-    canCreate: function canCreate(state) {
-      return state.canCreate;
-    },
-    canUpdate: function canUpdate(state) {
-      return state.canUpdate;
-    },
-    canRead: function canRead(state) {
-      return state.canRead;
-    },
-    canDelete: function canDelete(state) {
-      return state.canDelete;
+    permissions: function permissions(state) {
+      return state.permissions;
     }
   },
   mutations: {
@@ -36693,23 +36689,11 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       state.user = user;
 
       if (user.permissions) {
-        state.commit('setCanCreate', user.permissions.includes('create'));
-        state.commit('setCanUpdate', user.permissions.includes('update'));
-        state.commit('setCanRead', user.permissions.includes('read'));
-        state.commit('setCanDelete', user.permissions.includes('delete'));
+        state.commit('setPermissions', user.permissions);
       }
     },
-    setCanCreate: function setCanCreate(state, canCreate) {
-      state.canCreate = canCreate;
-    },
-    setCanUpdate: function setCanUpdate(state, canUpdate) {
-      state.canUpdate = canUpdate;
-    },
-    setCanRead: function setCanRead(state, canRead) {
-      state.canRead = canRead;
-    },
-    setCanDelete: function setCanDelete(state, canDelete) {
-      state.canDelete = canDelete;
+    setPermissions: function setPermissions(state, permissions) {
+      state.permissions = permissions;
     }
   },
   actions: {
@@ -36717,19 +36701,28 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
       return true;
     },
     login: function login(context, data) {
-      window.axios.post('/api/auth/login', data).then(function (res) {
+      window.axios.post("".concat(BASE_URL, "/login"), data).then(function (res) {
         console.log('gotLogin', res.data);
-        context.commit(setUser, res.data);
+        console.log('parsed', _helpers__WEBPACK_IMPORTED_MODULE_3__["default"].parseJwt(res.data.accessToken));
+        context.commit('setUser', res.data);
       });
     },
     logout: function logout(context) {
       window.axios.post('/api/auth/logout').then(function (res) {
-        context.commit(setUser, res.data);
-        context.commit('setCanCreate', false);
-        context.commit('setCanUpdate', false);
-        context.commit('setCanRead', false);
-        context.commit('setCanDelete', false);
+        context.commit('setUser', res.data);
+        context.commit('setPermissions', []);
       });
+    },
+    can: function can(context, data) {
+      if (Array.isArray(data)) {
+        var response = false;
+        var confirmed = data.filter(function (d) {
+          return context.permissions.includes(d);
+        });
+        return confirmed.length > 0;
+      } else {
+        return context.permissions.includes(data);
+      }
     }
   }
 });

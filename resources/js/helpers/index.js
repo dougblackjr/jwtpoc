@@ -1,3 +1,5 @@
+import store from '../store'
+
 const helpers = {
 	parseJwt: function(token) {
 
@@ -12,6 +14,9 @@ const helpers = {
 	    }).join(''))
 
 	    return JSON.parse(jsonPayload)
+	},
+	can: function(request) {
+		return store.can(request)
 	}
 }
 
