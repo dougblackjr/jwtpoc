@@ -36811,6 +36811,7 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
     login: function login(context, data) {
       window.axios.post("".concat(BASE_URL, "/login"), data).then(function (res) {
         context.commit('setUser', res.data);
+        context.dispatch('getItems');
       });
     },
     me: function me(context, token) {
@@ -36823,6 +36824,7 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
           custom: res.data
         };
         context.commit('setUser', data);
+        context.dispatch('getItems');
       });
     },
     refresh: function refresh(context) {
@@ -36840,6 +36842,8 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
     getItems: function getItems(context) {
       window.axios.get('/api/items').then(function (res) {
         return context.commit('setItems', res.data);
+      })["catch"](function (err) {
+        return console.log('nah uh');
       });
     },
     createItem: function createItem(context, data) {

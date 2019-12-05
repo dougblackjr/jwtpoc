@@ -82,6 +82,7 @@ const store = new Vuex.Store({
 			window.axios.post(`${BASE_URL}/login`, data)
 			.then(res => {
 				context.commit('setUser', res.data)
+				context.dispatch('getItems')
 			})
 		},
 		me(context, token) {
@@ -95,6 +96,7 @@ const store = new Vuex.Store({
 				}
 
 				context.commit('setUser', data)
+				context.dispatch('getItems')
 			})
 		},
 		refresh(context) {
@@ -114,6 +116,7 @@ const store = new Vuex.Store({
 		getItems(context) {
 			window.axios.get('/api/items')
 			.then(res => context.commit('setItems', res.data))
+			.catch(err => console.log('nah uh'))
 		},
 		createItem(context, data) {
 			window.axios.post('/api/items', {name: data})
